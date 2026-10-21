@@ -256,15 +256,18 @@ function Core.equipDumbbell()
 end
 
 function Core.doClicker()
-    if mouse1click then
-        mouse1click()
-    elseif mouse1press and mouse1release then
-        mouse1press()
-        mouse1release()
-    elseif VIM then
-        VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-        VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+    local vu = game:GetService("VirtualUser")
+    if not vu then
+        Core.punch()
+        return
     end
+    local cam = workspace.CurrentCamera
+    local pos = cam and Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y / 2) or Vector2.new(0, 0)
+    local ok = pcall(function()
+        vu:CaptureController()
+        vu:ClickButton1(pos)
+    end)
+    if not ok then Core.punch() end
 end
 
 function Core.punch()
