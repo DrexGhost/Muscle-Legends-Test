@@ -39,62 +39,62 @@ local function build()
         end
     end
 
-    local function zeroVelocity()
+    local function findGroundPos(fromPos)
+        local c = LocalPlayer.Character
+        if not c then return nil end
+        local params = RaycastParams.new()
+        params.FilterType = Enum.RaycastFilterType.Exclude
+        params.FilterDescendantsInstances = { c }
+        local result = workspace:Raycast(fromPos + Vector3.new(0, 5, 0), Vector3.new(0, -2000, 0), params)
+        if result then return result.Position + Vector3.new(0, 3.5, 0) end
+        return nil
+    end
+
+    local function stopFarm()
         local c = LocalPlayer.Character
         if not c then return end
         local root = c:FindFirstChild("HumanoidRootPart")
-        if root then
-            root.AssemblyLinearVelocity = Vector3.zero
-            root.AssemblyAngularVelocity = Vector3.zero
-        end
-    end
+        local h = c:FindFirstChildOfClass("Humanoid")
+        if not root or not h then return end
 
-    local function resetCharState()
+        root.AssemblyLinearVelocity = Vector3.zero
+        root.AssemblyAngularVelocity = Vector3.zero
+
+        local target = findGroundPos(root.Position) or findGroundPos(RETURN_POS) or RETURN_POS
+        root.CFrame = CFrame.new(target)
+
         if noclipActive then
             setNoclip(false)
             noclipActive = false
         end
-        local c = LocalPlayer.Character
-        if c then
-            local h = c:FindFirstChildOfClass("Humanoid")
-            if h then
-                h.PlatformStand = false
-                h.AutoRotate = true
-            end
-            local root = c:FindFirstChild("HumanoidRootPart")
-            if root then
-                root.AssemblyLinearVelocity = Vector3.zero
-                root.AssemblyAngularVelocity = Vector3.zero
-            end
-        end
+
+        h.PlatformStand = false
+        h.AutoRotate = true
     end
 
-    local function safeReturnTo(pos)
+    local function returnToBase()
         local c = LocalPlayer.Character
         if not c then return end
         local root = c:FindFirstChild("HumanoidRootPart")
-        if root then
-            root.AssemblyLinearVelocity = Vector3.zero
-            root.AssemblyAngularVelocity = Vector3.zero
-            root.CFrame = CFrame.new(pos)
-        end
-        resetCharState()
+        if not root then return end
+
+        root.AssemblyLinearVelocity = Vector3.zero
+        root.AssemblyAngularVelocity = Vector3.zero
+
+        local target = findGroundPos(RETURN_POS) or RETURN_POS
+        root.CFrame = CFrame.new(target)
     end
 
     GUI.makeSectionHeader(page, "Boss Farm", 1)
     GUI.makeToggle(page, "Boss Farm", "Фарм боссов", Core.settings.bossFarm, 2, function(v)
         Core.settings.bossFarm = v
-        if not v and not Core.settings.collectChest then
-            safeReturnTo(RETURN_POS)
-        end
+        if not v and not Core.settings.collectChest then stopFarm() end
     end, "bossFarm")
 
     GUI.makeSectionHeader(page, "Chest", 3)
     GUI.makeToggle(page, "Collect Chest", "Сбор сундуков", Core.settings.collectChest, 4, function(v)
         Core.settings.collectChest = v
-        if not v and not Core.settings.bossFarm then
-            safeReturnTo(RETURN_POS)
-        end
+        if not v and not Core.settings.bossFarm then stopFarm() end
     end, "collectChest")
 
     local lastAttack, lastSearchTime, lastChestTime = 0, 0, 0
@@ -128,7 +128,8 @@ local function build()
                 lastChestTime = now
                 if not noclipActive then setNoclip(true); noclipActive = true end
                 hum.PlatformStand = true
-                zeroVelocity()
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
                 local chest = Core.CHESTS[chestIndex]
                 if chest then hrp.CFrame = CFrame.new(chest.coords + Vector3.new(0, 3, 0)) end
                 chestIndex = chestIndex + 1
@@ -139,7 +140,7 @@ local function build()
         if Core.settings.bossFarm then
             if currentBossPart then
                 if not currentBossPart.Parent or currentBossPart.Position.Y <= 0 then
-                    if bossWasAlive then safeReturnTo(RETURN_POS) end
+                    if bossWasAlive then returnToBase() end
                     currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
                 else
                     local hp = currentBossModel:GetAttribute("Health") or currentBossPart:GetAttribute("Health")
@@ -147,7 +148,7 @@ local function build()
                         bossWasAlive = true
                     elseif hp and hp <= 0 then
                         if bossWasAlive then
-                            safeReturnTo(RETURN_POS)
+                            returnToBase()
                             currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
                         end
                     end
@@ -172,7 +173,8 @@ local function build()
 
             hum.AutoRotate = false
             hum.PlatformStand = true
-            zeroVelocity()
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
 
             local height = Core.BOSS_HEIGHTS[currentBossModel.Name] or 143
             local targetPos = Vector3.new(currentBossPart.Position.X, height, currentBossPart.Position.Z)
