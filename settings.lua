@@ -14,6 +14,14 @@ local function refreshAllUI()
         end
     end
 
+    for _, bName in ipairs(Core.EVENT_BOSS_ORDER) do
+        local key = "boss_" .. bName
+        local ref = Core.toggleRefs[key]
+        if ref then
+            ref.setEnabled(Core.settings.eventBosses[bName] == true, true)
+        end
+    end
+
     for name, ref in pairs(Core.sliderRefs) do
         local val = Core.settings[name]
         if val ~= nil then ref.setValue(val, true) end
