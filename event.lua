@@ -99,19 +99,27 @@ local function build()
 
     local function anyBossEnabled()
         for _, bName in ipairs(Core.EVENT_BOSS_ORDER) do
-            if Core.settings.eventBosses[bName] then return true end
+            if Core.settings.eventBosses[bName] == true then return true end
         end
         return false
     end
 
+    local bossRefs = {}
+
     local bNames = {"EXTREME", "HARD", "MEDIUM", "EASY"}
     local order = 4
     for _, bName in ipairs(bNames) do
-        local isActive = Core.settings.eventBosses[bName] or false
-        GUI.makeToggle(page, bName, "Фармить " .. bName, isActive, order, function(v)
+        local isActive = Core.settings.eventBosses[bName] == true
+        local ref
+        ref = GUI.makeToggle(page, bName, "Фармить " .. bName, isActive, order, function(v)
             Core.settings.eventBosses[bName] = v
-            Core.saveSetting("eventBosses", Core.settings.eventBosses)
             if v then
+                for otherName, otherRef in pairs(bossRefs) do
+                    if otherName ~= bName then
+                        Core.settings.eventBosses[otherName] = false
+                        if otherRef then otherRef.Set(false, true) end
+                    end
+                end
                 Core.settings.autoEventFarm = true
             else
                 if not anyBossEnabled() then
@@ -119,30 +127,35 @@ local function build()
                     stopFarm()
                 end
             end
+            Core.saveSetting("eventBosses", Core.settings.eventBosses)
         end, "boss_" .. bName)
+        bossRefs[bName] = ref
         order = order + 1
     end
 
-    Core.settings.autoEventFarm = anyBossEnabled()
-
-    local lastAttack, lastSearchTime = 0, 0
-    local currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
+    if not anyBossEnabled() then
+        Core.settings.autoEventFarm = false
+    end
 
     local function getBoss()
         for _, name in ipairs(Core.EVENT_BOSS_ORDER) do
-            if Core.settings.eventBosses[name] then
+            if Core.settings.eventBosses[name] == true then
                 local b = Core.EVENT_BOSSES[name]
                 local model = workspace:FindFirstChild(b.model)
                 if model then
                     local part = model:FindFirstChild(b.part)
                     if part and part.Position.Y > 0 then
-                        return model, part
+                        return model, part, name
                     end
                 end
             end
         end
         return nil
     end
+
+    local lastAttack, lastSearchTime = 0, 0
+    local currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
+    local currentBossName = nil
 
     RunService.Heartbeat:Connect(function()
         if not Core.settings.autoEventFarm then return end
@@ -151,9 +164,12 @@ local function build()
         local now = os.clock()
 
         if currentBossPart then
-            if not currentBossPart.Parent or currentBossPart.Position.Y <= 0 then
+            local stillEnabled = currentBossName ~= nil and Core.settings.eventBosses[currentBossName] == true
+            local outOfWorld = not currentBossPart.Parent or currentBossPart.Position.Y <= 0
+
+            if not stillEnabled or outOfWorld then
                 if bossWasAlive then returnToBase() end
-                currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
+                currentBossModel, currentBossPart, bossWasAlive, currentBossName = nil, nil, false, nil
             else
                 local hp = currentBossModel:GetAttribute("Health") or currentBossPart:GetAttribute("Health")
                 if hp and hp > 0 then
@@ -161,7 +177,7 @@ local function build()
                 elseif hp and hp <= 0 then
                     if bossWasAlive then
                         returnToBase()
-                        currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
+                        currentBossModel, currentBossPart, bossWasAlive, currentBossName = nil, nil, false, nil
                     end
                 end
             end
@@ -170,9 +186,9 @@ local function build()
         if not currentBossPart then
             if now - lastSearchTime >= 2 then
                 lastSearchTime = now
-                local bModel, bPart = getBoss()
+                local bModel, bPart, bName = getBoss()
                 if bModel then
-                    currentBossModel, currentBossPart, bossWasAlive = bModel, bPart, true
+                    currentBossModel, currentBossPart, bossWasAlive, currentBossName = bModel, bPart, true, bName
                 end
             end
             if not currentBossPart then return end
