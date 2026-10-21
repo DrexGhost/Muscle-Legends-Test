@@ -9,7 +9,11 @@ local function build()
     GUI.makeSectionHeader(page, "Teleport", 1)
     GUI.makeActionButton(page, "Halloween Gym", "blue", 2, function()
         local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then hrp.CFrame = CFrame.new(5558, 85, 5838) end
+        if hrp then
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+            hrp.CFrame = CFrame.new(5558, 85, 5838)
+        end
     end)
 
     GUI.makeSectionHeader(page, "Event Farm", 3)
@@ -17,6 +21,7 @@ local function build()
     local char, hrp, hum
     local savedCollide = {}
     local noclipActive = false
+    local RETURN_POS = Vector3.new(-16.9, 36.3, -1243.5)
 
     local function bindChar(c)
         char = c
@@ -46,24 +51,55 @@ local function build()
         end
     end
 
-    local function resetCharState()
+    local function findGroundPos(fromPos)
+        local c = LocalPlayer.Character
+        if not c then return nil end
+        local params = RaycastParams.new()
+        params.FilterType = Enum.RaycastFilterType.Exclude
+        params.FilterDescendantsInstances = { c }
+        local result = workspace:Raycast(fromPos + Vector3.new(0, 5, 0), Vector3.new(0, -2000, 0), params)
+        if result then return result.Position + Vector3.new(0, 3.5, 0) end
+        return nil
+    end
+
+    local function stopFarm()
+        local c = LocalPlayer.Character
+        if not c then return end
+        local root = c:FindFirstChild("HumanoidRootPart")
+        local h = c:FindFirstChildOfClass("Humanoid")
+        if not root or not h then return end
+
+        root.AssemblyLinearVelocity = Vector3.zero
+        root.AssemblyAngularVelocity = Vector3.zero
+
+        local target = findGroundPos(root.Position) or findGroundPos(RETURN_POS) or RETURN_POS
+        root.CFrame = CFrame.new(target)
+
         if noclipActive then
             setNoclip(false)
             noclipActive = false
         end
+
+        h.PlatformStand = false
+        h.AutoRotate = true
+    end
+
+    local function returnToBase()
         local c = LocalPlayer.Character
-        if c then
-            local h = c:FindFirstChildOfClass("Humanoid")
-            if h then
-                h.PlatformStand = false
-                h.AutoRotate = true
-            end
-        end
+        if not c then return end
+        local root = c:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+
+        root.AssemblyLinearVelocity = Vector3.zero
+        root.AssemblyAngularVelocity = Vector3.zero
+
+        local target = findGroundPos(RETURN_POS) or RETURN_POS
+        root.CFrame = CFrame.new(target)
     end
 
     GUI.makeToggle(page, "Auto Event Farm", "Фарм ивентовых боссов", Core.settings.autoEventFarm, 4, function(v)
         Core.settings.autoEventFarm = v
-        if not v then resetCharState() end
+        if not v then stopFarm() end
     end, "autoEventFarm")
 
     local bNames = {"EXTREME", "HARD", "MEDIUM", "EASY"}
@@ -85,7 +121,6 @@ local function build()
 
     local lastAttack, lastSearchTime = 0, 0
     local currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
-    local RETURN_POS = Vector3.new(-16.9, 36.3, -1243.5)
 
     local function getBoss()
         for _, name in ipairs(Core.EVENT_BOSS_ORDER) do
@@ -111,7 +146,7 @@ local function build()
 
         if currentBossPart then
             if not currentBossPart.Parent or currentBossPart.Position.Y <= 0 then
-                if bossWasAlive then hrp.CFrame = CFrame.new(RETURN_POS) end
+                if bossWasAlive then returnToBase() end
                 currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
             else
                 local hp = currentBossModel:GetAttribute("Health") or currentBossPart:GetAttribute("Health")
@@ -119,7 +154,7 @@ local function build()
                     bossWasAlive = true
                 elseif hp and hp <= 0 then
                     if bossWasAlive then
-                        hrp.CFrame = CFrame.new(RETURN_POS)
+                        returnToBase()
                         currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
                     end
                 end
@@ -144,6 +179,8 @@ local function build()
 
         hum.AutoRotate = false
         hum.PlatformStand = true
+        hrp.AssemblyLinearVelocity = Vector3.zero
+        hrp.AssemblyAngularVelocity = Vector3.zero
 
         local height = Core.BOSS_HEIGHTS[currentBossModel.Name] or 143
         local targetPos = Vector3.new(currentBossPart.Position.X, height, currentBossPart.Position.Z)
