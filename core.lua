@@ -75,7 +75,7 @@ Core.BOSS_HEIGHTS = {
     Boss4 = 143, Boss5 = 143, Boss6 = 143,
     ["Grim Reaper"] = 240,
     ["Frankenbrute"] = 140,
-    ["Pumpkin Titan"] = 250,
+    ["Pumpkin Titan"] = 245,
     ["Scarecrow Colossus"] = 150,
 }
 
