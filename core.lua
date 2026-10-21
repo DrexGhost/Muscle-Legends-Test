@@ -74,9 +74,9 @@ Core.BOSS_HEIGHTS = {
     Boss1 = 143, Boss2 = 143, Boss3 = 143,
     Boss4 = 143, Boss5 = 143, Boss6 = 143,
     ["Grim Reaper"] = 240,
-    ["Frankenbrute"] = 135,
-    ["Pumpkin Titan"] = 256,
-    ["Scarecrow Colossus"] = 156,
+    ["Frankenbrute"] = 140,
+    ["Pumpkin Titan"] = 250,
+    ["Scarecrow Colossus"] = 150,
 }
 
 Core.EVENT_BOSSES = {
