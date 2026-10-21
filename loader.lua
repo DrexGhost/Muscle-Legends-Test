@@ -1,4 +1,4 @@
-local base = "https://raw.githubusercontent.com/DrexGhost/Muscle-Legends/main/"
+local base = "https://raw.githubusercontent.com/DrexGhost/Muscle-Legends-Test/main/"
 
 local function httpGet(url)
     if request then
