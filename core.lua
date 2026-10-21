@@ -73,10 +73,10 @@ Core.CHESTS = {
 Core.BOSS_HEIGHTS = {
     Boss1 = 143, Boss2 = 143, Boss3 = 143,
     Boss4 = 143, Boss5 = 143, Boss6 = 143,
-    ["Grim Reaper"] = 240,
+    ["Grim Reaper"] = 255,
     ["Frankenbrute"] = 145,
-    ["Pumpkin Titan"] = 245,
-    ["Scarecrow Colossus"] = 150,
+    ["Pumpkin Titan"] = 256,
+    ["Scarecrow Colossus"] = 156,
 }
 
 Core.EVENT_BOSSES = {
@@ -228,17 +228,14 @@ function Core.deleteConfig(name)
     return pcall(function() delfile(path) end)
 end
 
-function Core.isWeightName(n)
-    n = string.lower(n or "")
-    return string.find(n, "weight") or string.find(n, "dumbbell") or string.find(n, "barbell") or string.find(n, "ganтел") ~= nil
-end
-
 function Core.hasDumbbell()
     local char = LocalPlayer.Character
     if not char then return false end
     for _, child in pairs(char:GetChildren()) do
-        if child:IsA("Tool") and Core.isWeightName(child.Name) then return true end
-        if child:IsA("BasePart") and Core.isWeightName(child.Name) then return true end
+        if child:IsA("Tool") then
+            local n = string.lower(child.Name)
+            if string.find(n, "weight") or string.find(n, "dumbbell") or string.find(n, "barbell") then return true end
+        end
     end
     return false
 end
@@ -247,81 +244,22 @@ function Core.equipDumbbell()
     local bp = LocalPlayer:FindFirstChild("Backpack")
     if not bp or not LocalPlayer.Character then return end
     for _, tool in pairs(bp:GetChildren()) do
-        if tool:IsA("Tool") and Core.isWeightName(tool.Name) then
-            tool.Parent = LocalPlayer.Character
-            task.wait(0.1)
-            return
+        if tool:IsA("Tool") then
+            local n = string.lower(tool.Name)
+            if string.find(n, "weight") or string.find(n, "dumbbell") or string.find(n, "barbell") then
+                tool.Parent = LocalPlayer.Character
+                task.wait(0.1)
+                return
+            end
         end
     end
-end
-
-function Core.findDumbbellPart()
-    local char = LocalPlayer.Character
-    if not char then return nil end
-
-    for _, child in pairs(char:GetChildren()) do
-        if child:IsA("Tool") and Core.isWeightName(child.Name) then
-            local handle = child:FindFirstChild("Handle")
-            if handle and handle:IsA("BasePart") then return handle end
-            local any = child:FindFirstChildWhichIsA("BasePart", true)
-            if any then return any end
-        end
-    end
-
-    for _, child in pairs(char:GetChildren()) do
-        if child:IsA("BasePart") and Core.isWeightName(child.Name) then
-            return child
-        end
-    end
-
-    for _, child in pairs(char:GetDescendants()) do
-        if child:IsA("BasePart") and Core.isWeightName(child.Name) then
-            return child
-        end
-    end
-
-    return nil
 end
 
 function Core.doClicker()
-    local char = LocalPlayer.Character
-    if not char then return end
-
-    local cam = workspace.CurrentCamera
-    if not cam then return end
-
-    local part = Core.findDumbbellPart()
-    if not part then
-        part = char:FindFirstChild("HumanoidRootPart")
-    end
-    if not part then return end
-
-    local screenPos = cam:WorldToScreenPoint(part.Position)
-    local clickPos
-    if screenPos.Z > 0 then
-        clickPos = Vector2.new(screenPos.X, screenPos.Y)
-    else
-        clickPos = Vector2.new(cam.ViewportSize.X / 2, cam.ViewportSize.Y / 2)
-    end
-
-    local vu = game:GetService("VirtualUser")
-    if vu then
-        local ok = pcall(function()
-            vu:CaptureController()
-            vu:ClickButton1(clickPos)
-        end)
-        if ok then return end
-    end
-
     if VIM then
-        local ok = pcall(function()
-            VIM:SendMouseButtonEvent(clickPos.X, clickPos.Y, 0, true, game, 0)
-            VIM:SendMouseButtonEvent(clickPos.X, clickPos.Y, 0, false, game, 0)
-        end)
-        if ok then return end
+        VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+        VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
     end
-
-    Core.punch()
 end
 
 function Core.punch()
