@@ -87,7 +87,11 @@ local function build()
     for _, loc in ipairs(locations) do
         GUI.makeActionButton(page, loc.name, "blue", order, function()
             local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.CFrame = CFrame.new(loc.coords) end
+            if hrp then
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
+                hrp.CFrame = CFrame.new(loc.coords)
+            end
         end)
         order = order + 1
     end
