@@ -1,12 +1,17 @@
 local base = "https://raw.githubusercontent.com/DrexGhost/Muscle-Legends/main/"
 
+local function httpGet(url)
+    if request then
+        local ok, res = pcall(request, {Url = url, Method = "GET"})
+        if ok and res and res.Success and res.Body then return res.Body end
+    end
+    local ok, body = pcall(game.HttpGet, game, url)
+    if ok then return body end
+    return nil
+end
+
 local function fetch(name)
-    local url = base .. name
-    local ok, code = pcall(function()
-        return game:HttpGet(url)
-    end)
-    if not ok then return nil end
-    return code
+    return httpGet(base .. name)
 end
 
 local function compile(name, code)
