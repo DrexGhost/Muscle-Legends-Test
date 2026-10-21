@@ -9,6 +9,7 @@ local function build()
     local char, hrp, hum
     local savedCollide = {}
     local noclipActive = false
+    local RETURN_POS = Vector3.new(-16.9, 36.3, -1243.5)
 
     local function bindChar(c)
         char = c
@@ -38,6 +39,16 @@ local function build()
         end
     end
 
+    local function zeroVelocity()
+        local c = LocalPlayer.Character
+        if not c then return end
+        local root = c:FindFirstChild("HumanoidRootPart")
+        if root then
+            root.AssemblyLinearVelocity = Vector3.zero
+            root.AssemblyAngularVelocity = Vector3.zero
+        end
+    end
+
     local function resetCharState()
         if noclipActive then
             setNoclip(false)
@@ -50,25 +61,45 @@ local function build()
                 h.PlatformStand = false
                 h.AutoRotate = true
             end
+            local root = c:FindFirstChild("HumanoidRootPart")
+            if root then
+                root.AssemblyLinearVelocity = Vector3.zero
+                root.AssemblyAngularVelocity = Vector3.zero
+            end
         end
+    end
+
+    local function safeReturnTo(pos)
+        local c = LocalPlayer.Character
+        if not c then return end
+        local root = c:FindFirstChild("HumanoidRootPart")
+        if root then
+            root.AssemblyLinearVelocity = Vector3.zero
+            root.AssemblyAngularVelocity = Vector3.zero
+            root.CFrame = CFrame.new(pos)
+        end
+        resetCharState()
     end
 
     GUI.makeSectionHeader(page, "Boss Farm", 1)
     GUI.makeToggle(page, "Boss Farm", "Фарм боссов", Core.settings.bossFarm, 2, function(v)
         Core.settings.bossFarm = v
-        if not v and not Core.settings.collectChest then resetCharState() end
+        if not v and not Core.settings.collectChest then
+            safeReturnTo(RETURN_POS)
+        end
     end, "bossFarm")
 
     GUI.makeSectionHeader(page, "Chest", 3)
     GUI.makeToggle(page, "Collect Chest", "Сбор сундуков", Core.settings.collectChest, 4, function(v)
         Core.settings.collectChest = v
-        if not v and not Core.settings.bossFarm then resetCharState() end
+        if not v and not Core.settings.bossFarm then
+            safeReturnTo(RETURN_POS)
+        end
     end, "collectChest")
 
     local lastAttack, lastSearchTime, lastChestTime = 0, 0, 0
     local currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
     local chestIndex = 1
-    local RETURN_POS = Vector3.new(-16.9, 36.3, -1243.5)
 
     local function getBoss()
         local events = workspace:FindFirstChild("Events")
@@ -97,6 +128,7 @@ local function build()
                 lastChestTime = now
                 if not noclipActive then setNoclip(true); noclipActive = true end
                 hum.PlatformStand = true
+                zeroVelocity()
                 local chest = Core.CHESTS[chestIndex]
                 if chest then hrp.CFrame = CFrame.new(chest.coords + Vector3.new(0, 3, 0)) end
                 chestIndex = chestIndex + 1
@@ -107,7 +139,7 @@ local function build()
         if Core.settings.bossFarm then
             if currentBossPart then
                 if not currentBossPart.Parent or currentBossPart.Position.Y <= 0 then
-                    if bossWasAlive then hrp.CFrame = CFrame.new(RETURN_POS) end
+                    if bossWasAlive then safeReturnTo(RETURN_POS) end
                     currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
                 else
                     local hp = currentBossModel:GetAttribute("Health") or currentBossPart:GetAttribute("Health")
@@ -115,7 +147,7 @@ local function build()
                         bossWasAlive = true
                     elseif hp and hp <= 0 then
                         if bossWasAlive then
-                            hrp.CFrame = CFrame.new(RETURN_POS)
+                            safeReturnTo(RETURN_POS)
                             currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
                         end
                     end
@@ -140,6 +172,7 @@ local function build()
 
             hum.AutoRotate = false
             hum.PlatformStand = true
+            zeroVelocity()
 
             local height = Core.BOSS_HEIGHTS[currentBossModel.Name] or 143
             local targetPos = Vector3.new(currentBossPart.Position.X, height, currentBossPart.Position.Z)
