@@ -97,27 +97,33 @@ local function build()
         root.CFrame = CFrame.new(target)
     end
 
-    GUI.makeToggle(page, "Auto Event Farm", "Фарм ивентовых боссов", Core.settings.autoEventFarm, 4, function(v)
-        Core.settings.autoEventFarm = v
-        if not v then stopFarm() end
-    end, "autoEventFarm")
+    local function anyBossEnabled()
+        for _, bName in ipairs(Core.EVENT_BOSS_ORDER) do
+            if Core.settings.eventBosses[bName] then return true end
+        end
+        return false
+    end
 
     local bNames = {"EXTREME", "HARD", "MEDIUM", "EASY"}
-    local order = 5
+    local order = 4
     for _, bName in ipairs(bNames) do
         local isActive = Core.settings.eventBosses[bName] or false
         GUI.makeToggle(page, bName, "Фармить " .. bName, isActive, order, function(v)
             Core.settings.eventBosses[bName] = v
             Core.saveSetting("eventBosses", Core.settings.eventBosses)
-            if v and not Core.settings.autoEventFarm then
+            if v then
                 Core.settings.autoEventFarm = true
-                if Core.toggleRefs["autoEventFarm"] then
-                    Core.toggleRefs["autoEventFarm"].setEnabled(true, true)
+            else
+                if not anyBossEnabled() then
+                    Core.settings.autoEventFarm = false
+                    stopFarm()
                 end
             end
         end, "boss_" .. bName)
         order = order + 1
     end
+
+    Core.settings.autoEventFarm = anyBossEnabled()
 
     local lastAttack, lastSearchTime = 0, 0
     local currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
