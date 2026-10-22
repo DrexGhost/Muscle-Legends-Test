@@ -124,6 +124,7 @@ Sidebar.Position = UDim2.new(0, 0, 0, 58)
 Sidebar.BackgroundColor3 = T.bg2
 Sidebar.BorderSizePixel = 0
 Sidebar.Parent = Main
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 24)
 
 local sidePad = Instance.new("UIPadding")
 sidePad.PaddingTop = UDim.new(0, 10)
