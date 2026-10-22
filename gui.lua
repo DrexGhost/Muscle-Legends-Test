@@ -35,7 +35,11 @@ Main.BorderSizePixel = 0
 Main.ClipsDescendants = true
 Main.Visible = false
 Main.Parent = screenGui
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 18)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 24)
+local mainStroke = Instance.new("UIStroke", Main)
+mainStroke.Color = T.stroke
+mainStroke.Thickness = 1.5
+mainStroke.Transparency = 0.2
 
 GUI.Main = Main
 GUI.BASE_W = BASE_W
