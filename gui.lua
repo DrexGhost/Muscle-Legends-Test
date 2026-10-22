@@ -58,7 +58,6 @@ TopBar.Size = UDim2.new(1, 0, 0, 58)
 TopBar.BackgroundColor3 = T.panel
 TopBar.BorderSizePixel = 0
 TopBar.Parent = Main
-Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 24)
 
 local logoBox = Instance.new("Frame")
 logoBox.Size = UDim2.new(0, 34, 0, 34)
@@ -125,7 +124,6 @@ Sidebar.Position = UDim2.new(0, 0, 0, 58)
 Sidebar.BackgroundColor3 = T.bg2
 Sidebar.BorderSizePixel = 0
 Sidebar.Parent = Main
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 24)
 
 local sidePad = Instance.new("UIPadding")
 sidePad.PaddingTop = UDim.new(0, 10)
