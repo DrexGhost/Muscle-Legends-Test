@@ -9,6 +9,9 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local T = Core.T
 
+local oldGui = PlayerGui:FindFirstChild("NexusML_UI")
+if oldGui then oldGui:Destroy() end
+
 local GUI = {}
 GUI._tabs = {}
 GUI._pages = {}
