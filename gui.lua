@@ -120,7 +120,7 @@ closeBtn.MouseLeave:Connect(function()
 end)
 
 local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 152, 1, -88)
+Sidebar.Size = UDim2.new(0, 152, 1, -58)
 Sidebar.Position = UDim2.new(0, 0, 0, 58)
 Sidebar.BackgroundColor3 = T.bg2
 Sidebar.BorderSizePixel = 0
@@ -131,6 +131,7 @@ local sidePad = Instance.new("UIPadding")
 sidePad.PaddingTop = UDim.new(0, 10)
 sidePad.PaddingLeft = UDim.new(0, 8)
 sidePad.PaddingRight = UDim.new(0, 8)
+sidePad.PaddingBottom = UDim.new(0, 10)
 sidePad.Parent = Sidebar
 
 local sideLayout = Instance.new("UIListLayout")
@@ -139,7 +140,7 @@ sideLayout.SortOrder = Enum.SortOrder.LayoutOrder
 sideLayout.Parent = Sidebar
 
 local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1, -152, 1, -88)
+Content.Size = UDim2.new(1, -152, 1, -58)
 Content.Position = UDim2.new(0, 152, 0, 58)
 Content.BackgroundTransparency = 1
 Content.Parent = Main
@@ -151,14 +152,6 @@ contentPad.PaddingRight = UDim.new(0, 12)
 contentPad.PaddingTop = UDim.new(0, 12)
 contentPad.PaddingBottom = UDim.new(0, 12)
 contentPad.Parent = Content
-
-local Footer = Instance.new("Frame")
-Footer.Size = UDim2.new(1, 0, 0, 30)
-Footer.Position = UDim2.new(0, 0, 1, -30)
-Footer.BackgroundColor3 = T.panel
-Footer.BorderSizePixel = 0
-Footer.Parent = Main
-Instance.new("UICorner", Footer).CornerRadius = UDim.new(0, 24)
 
 local function buildIcon(holder, kind, color)
     for _, c in ipairs(holder:GetChildren()) do c:Destroy() end
