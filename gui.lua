@@ -57,13 +57,25 @@ TopBar.Name = "TopBar"
 TopBar.Size = UDim2.new(1, 0, 0, 58)
 TopBar.BackgroundColor3 = T.panel
 TopBar.BorderSizePixel = 0
+TopBar.ZIndex = 2
 TopBar.Parent = Main
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 24)
+
+local TopBarMask = Instance.new("Frame")
+TopBarMask.Name = "TopBarMask"
+TopBarMask.Size = UDim2.new(1, 0, 0, 24)
+TopBarMask.Position = UDim2.new(0, 0, 1, -24)
+TopBarMask.BackgroundColor3 = T.panel
+TopBarMask.BorderSizePixel = 0
+TopBarMask.ZIndex = 3
+TopBarMask.Parent = TopBar
 
 local logoBox = Instance.new("Frame")
 logoBox.Size = UDim2.new(0, 34, 0, 34)
 logoBox.Position = UDim2.new(0, 16, 0.5, -17)
 logoBox.BackgroundColor3 = T.accent
 logoBox.BorderSizePixel = 0
+logoBox.ZIndex = 4
 logoBox.Parent = TopBar
 Instance.new("UICorner", logoBox).CornerRadius = UDim.new(0, 9)
 
@@ -74,6 +86,7 @@ logoText.Text = "M"
 logoText.TextColor3 = Color3.fromRGB(10, 14, 24)
 logoText.TextSize = 20
 logoText.Font = Enum.Font.GothamBlack
+logoText.ZIndex = 5
 logoText.Parent = logoBox
 
 local titleLabel = Instance.new("TextLabel")
@@ -85,6 +98,7 @@ titleLabel.TextColor3 = T.text
 titleLabel.TextSize = 15
 titleLabel.Font = Enum.Font.GothamBlack
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.ZIndex = 4
 titleLabel.Parent = TopBar
 
 local versionLabel = Instance.new("TextLabel")
@@ -96,6 +110,7 @@ versionLabel.TextColor3 = T.textMuted
 versionLabel.TextSize = 10
 versionLabel.Font = Enum.Font.Gotham
 versionLabel.TextXAlignment = Enum.TextXAlignment.Left
+versionLabel.ZIndex = 4
 versionLabel.Parent = TopBar
 
 local closeBtn = Instance.new("TextButton")
@@ -108,6 +123,7 @@ closeBtn.TextColor3 = T.textDim
 closeBtn.TextSize = 20
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.AutoButtonColor = false
+closeBtn.ZIndex = 4
 closeBtn.Parent = TopBar
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 7)
 
@@ -123,6 +139,7 @@ Sidebar.Size = UDim2.new(0, 152, 1, -58)
 Sidebar.Position = UDim2.new(0, 0, 0, 58)
 Sidebar.BackgroundColor3 = T.bg2
 Sidebar.BorderSizePixel = 0
+Sidebar.ZIndex = 2
 Sidebar.Parent = Main
 Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 24)
 
@@ -142,6 +159,7 @@ local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, -152, 1, -58)
 Content.Position = UDim2.new(0, 152, 0, 58)
 Content.BackgroundTransparency = 1
+Content.ZIndex = 2
 Content.Parent = Main
 GUI.Content = Content
 
