@@ -45,7 +45,7 @@ local function build()
         autoClickThread = task.spawn(function()
             while Core.settings.autoClicker do
                 Core.doClicker()
-                task.wait(0.03)
+                task.wait(0.05)
             end
         end)
     end
