@@ -1,5 +1,4 @@
 local Core = ...
-
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -9,9 +8,7 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local T = Core.T
 
-local GUI = {}
-GUI._tabs = {}
-GUI._pages = {}
+local GUI = { _tabs = {}, _pages = {} }
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "NexusML_UI"
@@ -22,8 +19,22 @@ screenGui.DisplayOrder = 999
 screenGui.Parent = PlayerGui
 
 GUI.screenGui = screenGui
-
 local BASE_W, BASE_H = 660, 460
+
+local function makeCorner(parent, radius)
+    local c = Instance.new("UICorner", parent)
+    c.CornerRadius = UDim.new(0, radius)
+    return c
+end
+
+local function makeStroke(parent, color, thickness, transparency)
+    local s = Instance.new("UIStroke", parent)
+    s.Color = color or T.stroke
+    s.Thickness = thickness or 1
+    s.Transparency = transparency or 0
+    s.Parent = parent
+    return s
+end
 
 local Main = Instance.new("Frame")
 Main.Name = "Main"
@@ -35,17 +46,11 @@ Main.BorderSizePixel = 0
 Main.ClipsDescendants = true
 Main.Visible = false
 Main.Parent = screenGui
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 24)
-
-local mainStroke = Instance.new("UIStroke")
-mainStroke.Color = T.stroke
-mainStroke.Thickness = 1.5
-mainStroke.Transparency = 0.2
-mainStroke.Parent = Main
+makeCorner(Main, 24)
+makeStroke(Main, T.stroke, 1.5, 0.2)
 
 GUI.Main = Main
-GUI.BASE_W = BASE_W
-GUI.BASE_H = BASE_H
+GUI.BASE_W, GUI.BASE_H = BASE_W, BASE_H
 
 local uiScale = Instance.new("UIScale")
 uiScale.Scale = (Core.settings.guiScale or 85) / 100
@@ -59,7 +64,7 @@ TopBar.BackgroundColor3 = T.panel
 TopBar.BorderSizePixel = 0
 TopBar.ZIndex = 2
 TopBar.Parent = Main
-Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 24)
+makeCorner(TopBar, 24)
 
 local TopBarMask = Instance.new("Frame")
 TopBarMask.Name = "TopBarMask"
@@ -77,7 +82,7 @@ logoBox.BackgroundColor3 = T.accent
 logoBox.BorderSizePixel = 0
 logoBox.ZIndex = 4
 logoBox.Parent = TopBar
-Instance.new("UICorner", logoBox).CornerRadius = UDim.new(0, 9)
+makeCorner(logoBox, 9)
 
 local logoText = Instance.new("TextLabel")
 logoText.Size = UDim2.new(1, 0, 1, 0)
@@ -125,7 +130,7 @@ closeBtn.Font = Enum.Font.GothamBold
 closeBtn.AutoButtonColor = false
 closeBtn.ZIndex = 4
 closeBtn.Parent = TopBar
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 7)
+makeCorner(closeBtn, 7)
 
 closeBtn.MouseEnter:Connect(function()
     TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = T.danger, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
@@ -141,7 +146,7 @@ Sidebar.BackgroundColor3 = T.bg2
 Sidebar.BorderSizePixel = 0
 Sidebar.ZIndex = 2
 Sidebar.Parent = Main
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 24)
+makeCorner(Sidebar, 24)
 
 local sidePad = Instance.new("UIPadding")
 sidePad.PaddingTop = UDim.new(0, 10)
@@ -186,7 +191,7 @@ local function buildIcon(holder, kind, color)
         f.BorderSizePixel = 0
         f.ZIndex = z or 2
         f.Parent = base
-        Instance.new("UICorner", f).CornerRadius = UDim.new(1, 0)
+        makeCorner(f, 10)
         return f
     end
 
@@ -196,21 +201,9 @@ local function buildIcon(holder, kind, color)
         mk(UDim2.new(0, 6, 0, 7), UDim2.new(0, 9, 0, 7), 2)
     elseif kind == "combat" then
         local l1 = Instance.new("Frame")
-        l1.Size = UDim2.new(0, 14, 0, 2)
-        l1.AnchorPoint = Vector2.new(0.5, 0.5)
-        l1.Position = UDim2.new(0.5, 0, 0.5, 0)
-        l1.Rotation = 45
-        l1.BackgroundColor3 = color
-        l1.BorderSizePixel = 0
-        l1.Parent = base
+        l1.Size = UDim2.new(0, 14, 0, 2); l1.AnchorPoint = Vector2.new(0.5, 0.5); l1.Position = UDim2.new(0.5, 0, 0.5, 0); l1.Rotation = 45; l1.BackgroundColor3 = color; l1.BorderSizePixel = 0; l1.Parent = base
         local l2 = Instance.new("Frame")
-        l2.Size = UDim2.new(0, 14, 0, 2)
-        l2.AnchorPoint = Vector2.new(0.5, 0.5)
-        l2.Position = UDim2.new(0.5, 0, 0.5, 0)
-        l2.Rotation = -45
-        l2.BackgroundColor3 = color
-        l2.BorderSizePixel = 0
-        l2.Parent = base
+        l2.Size = UDim2.new(0, 14, 0, 2); l2.AnchorPoint = Vector2.new(0.5, 0.5); l2.Position = UDim2.new(0.5, 0, 0.5, 0); l2.Rotation = -45; l2.BackgroundColor3 = color; l2.BorderSizePixel = 0; l2.Parent = base
     elseif kind == "helper" then
         mk(UDim2.new(0, 4, 0, 14), UDim2.new(0, 6, 0, 1), 2)
         mk(UDim2.new(0, 10, 0, 4), UDim2.new(0, 3, 0, 6), 2)
@@ -240,7 +233,7 @@ function GUI.makeTab(text, order, iconKind)
     tab.AutoButtonColor = false
     tab.LayoutOrder = order
     tab.Parent = Sidebar
-    Instance.new("UICorner", tab).CornerRadius = UDim.new(0, 8)
+    makeCorner(tab, 8)
 
     local indicator = Instance.new("Frame")
     indicator.Size = UDim2.new(0, 3, 0.55, 0)
@@ -249,7 +242,7 @@ function GUI.makeTab(text, order, iconKind)
     indicator.BorderSizePixel = 0
     indicator.BackgroundTransparency = 1
     indicator.Parent = tab
-    Instance.new("UICorner", indicator).CornerRadius = UDim.new(1, 0)
+    makeCorner(indicator, 10)
 
     local iconHolder = Instance.new("Frame")
     iconHolder.Size = UDim2.new(0, 22, 1, 0)
@@ -269,7 +262,7 @@ function GUI.makeTab(text, order, iconKind)
     textLabel.TextXAlignment = Enum.TextXAlignment.Left
     textLabel.Parent = tab
 
-    local obj = { Button = tab, Indicator = indicator, IconHolder = iconHolder, Text = textLabel, Active = false, IconKind = iconKind }
+    local obj = { Button = tab, Indicator = indicator, Text = textLabel, Active = false, IconKind = iconKind }
 
     obj.SetActive = function(v)
         obj.Active = v
@@ -344,7 +337,7 @@ function GUI.makeSectionHeader(parent, text, order)
     dot.Position = UDim2.new(0, 4, 0.5, -3)
     dot.BackgroundColor3 = T.accent
     dot.BorderSizePixel = 0
-    Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
+    makeCorner(dot, 10)
 
     local lbl = Instance.new("TextLabel", holder)
     lbl.Size = UDim2.new(1, -30, 1, 0)
@@ -365,12 +358,8 @@ function GUI.makeToggle(parent, name, desc, default, order, callback, settingNam
     row.Text = ""
     row.AutoButtonColor = false
     row.LayoutOrder = order
-    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 10)
-
-    local rowStroke = Instance.new("UIStroke", row)
-    rowStroke.Color = T.stroke
-    rowStroke.Thickness = 1
-    rowStroke.Transparency = 0.4
+    makeCorner(row, 10)
+    local rowStroke = makeStroke(row, T.stroke, 1, 0.4)
 
     local nameLbl = Instance.new("TextLabel", row)
     nameLbl.Size = UDim2.new(1, -80, 0, 16)
@@ -397,14 +386,14 @@ function GUI.makeToggle(parent, name, desc, default, order, callback, settingNam
     pill.Position = UDim2.new(1, -54, 0.5, -11)
     pill.BackgroundColor3 = default and T.accent or T.toggleOff
     pill.BorderSizePixel = 0
-    Instance.new("UICorner", pill).CornerRadius = UDim.new(1, 0)
+    makeCorner(pill, 11)
 
     local knob = Instance.new("Frame", pill)
     knob.Size = UDim2.new(0, 18, 0, 18)
     knob.Position = default and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
     knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     knob.BorderSizePixel = 0
-    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
+    makeCorner(knob, 9)
 
     local state = default
     local function setState(v, silent)
@@ -437,12 +426,8 @@ function GUI.makeSlider(parent, name, min, max, default, order, callback, settin
     row.BackgroundColor3 = T.card
     row.BorderSizePixel = 0
     row.LayoutOrder = order
-    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 10)
-
-    local rowStroke = Instance.new("UIStroke", row)
-    rowStroke.Color = T.stroke
-    rowStroke.Thickness = 1
-    rowStroke.Transparency = 0.4
+    makeCorner(row, 10)
+    local rowStroke = makeStroke(row, T.stroke, 1, 0.4)
 
     local nameLbl = Instance.new("TextLabel", row)
     nameLbl.Size = UDim2.new(1, -80, 0, 16)
@@ -469,14 +454,14 @@ function GUI.makeSlider(parent, name, min, max, default, order, callback, settin
     track.Position = UDim2.new(0, 14, 0, 42)
     track.BackgroundColor3 = T.toggleOff
     track.BorderSizePixel = 0
-    Instance.new("UICorner", track).CornerRadius = UDim.new(1, 0)
+    makeCorner(track, 10)
 
     local initPct = (default - min) / (max - min)
     local fill = Instance.new("Frame", track)
     fill.Size = UDim2.new(initPct, 0, 1, 0)
     fill.BackgroundColor3 = T.accent
     fill.BorderSizePixel = 0
-    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+    makeCorner(fill, 10)
 
     local knob = Instance.new("Frame", track)
     knob.Size = UDim2.new(0, 14, 0, 14)
@@ -484,11 +469,8 @@ function GUI.makeSlider(parent, name, min, max, default, order, callback, settin
     knob.Position = UDim2.new(initPct, 0, 0.5, 0)
     knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     knob.BorderSizePixel = 0
-    Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
-
-    local ks = Instance.new("UIStroke", knob)
-    ks.Color = T.accent
-    ks.Thickness = 2
+    makeCorner(knob, 10)
+    makeStroke(knob, T.accent, 2)
 
     local value, activeDrag = default, false
     local function apply(v, silent)
@@ -515,13 +497,11 @@ function GUI.makeSlider(parent, name, min, max, default, order, callback, settin
             apply(min + ((input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X) * (max - min), false)
         end
     end)
-
     UIS.InputChanged:Connect(function(input)
         if activeDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             apply(min + ((input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X) * (max - min), false)
         end
     end)
-
     UIS.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             activeDrag = false
@@ -534,20 +514,9 @@ end
 
 function GUI.makeActionButton(parent, text, variant, order, onClick)
     local color, textColor, strokeColor = T.card, Color3.fromRGB(255, 255, 255), T.stroke
-
-    if variant == "primary" then
-        color = T.accent
-        textColor = Color3.fromRGB(10, 14, 24)
-        strokeColor = T.accent
-    elseif variant == "blue" then
-        color = T.blue
-        textColor = Color3.fromRGB(255, 255, 255)
-        strokeColor = T.blueHi
-    elseif variant == "danger" then
-        color = T.danger
-        textColor = Color3.fromRGB(255, 255, 255)
-        strokeColor = T.danger
-    end
+    if variant == "primary" then color = T.accent; textColor = Color3.fromRGB(10, 14, 24); strokeColor = T.accent
+    elseif variant == "blue" then color = T.blue; textColor = Color3.fromRGB(255, 255, 255); strokeColor = T.blueHi
+    elseif variant == "danger" then color = T.danger; textColor = Color3.fromRGB(255, 255, 255); strokeColor = T.danger end
 
     local btn = Instance.new("TextButton", parent)
     btn.Size = UDim2.new(1, 0, 0, 42)
@@ -559,11 +528,8 @@ function GUI.makeActionButton(parent, text, variant, order, onClick)
     btn.Font = Enum.Font.GothamBold
     btn.AutoButtonColor = false
     btn.LayoutOrder = order
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
-
-    local s = Instance.new("UIStroke", btn)
-    s.Color = strokeColor
-    s.Thickness = 1
+    makeCorner(btn, 10)
+    local s = makeStroke(btn, strokeColor, 1)
 
     btn.MouseEnter:Connect(function()
         TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = color:Lerp(Color3.fromRGB(255, 255, 255), variant == "primary" and 0.2 or 0.15)}):Play()
@@ -589,19 +555,12 @@ floatBtn.Text = ""
 floatBtn.AutoButtonColor = false
 floatBtn.ClipsDescendants = true
 floatBtn.Parent = screenGui
-Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(0, 14)
+makeCorner(floatBtn, 14)
 
 local fbGrad = Instance.new("UIGradient", floatBtn)
-fbGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(26, 34, 54)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 14, 26))
-})
+fbGrad.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(26, 34, 54)), ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 14, 26))})
 fbGrad.Rotation = 135
-
-local fbStroke = Instance.new("UIStroke", floatBtn)
-fbStroke.Color = T.accent
-fbStroke.Thickness = 1.5
-fbStroke.Transparency = 0.3
+local fbStroke = makeStroke(floatBtn, T.accent, 1.5, 0.3)
 
 local barContainer = Instance.new("Frame", floatBtn)
 barContainer.Size = UDim2.new(0, 32, 1, -18)
@@ -620,7 +579,7 @@ for i = 1, 5 do
     bar.Size = UDim2.new(0, 4, 0.3, 0)
     bar.BackgroundColor3 = T.accent
     bar.BorderSizePixel = 0
-    Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
+    makeCorner(bar, 10)
     table.insert(bars, {frame = bar, phase = i * 0.8})
 end
 
@@ -688,35 +647,20 @@ function GUI.setOpenState(open)
     end
 end
 
-function GUI.setScale(scale)
-    uiScale.Scale = scale
-end
-
+function GUI.setScale(scale) uiScale.Scale = scale end
 function GUI.setButtonSize(size)
     Core.settings.floatBtnSize = size
     if not isOpen and not animating then
         TweenService:Create(floatBtn, TweenInfo.new(0.2), {Size = UDim2.new(0, size, 0, size)}):Play()
     end
 end
-
-function GUI.setButtonPos(pos)
-    floatBtn.Position = UDim2.new(pos[1] or 0, pos[2] or 20, pos[3] or 0.5, pos[4] or 0)
-end
-
-function GUI.activateFirstTab()
-    if #GUI._tabs > 0 and #GUI._pages > 0 then
-        GUI.switchTab(GUI._tabs[1], GUI._pages[1])
-    end
-end
+function GUI.setButtonPos(pos) floatBtn.Position = UDim2.new(pos[1] or 0, pos[2] or 20, pos[3] or 0.5, pos[4] or 0) end
+function GUI.activateFirstTab() if #GUI._tabs > 0 and #GUI._pages > 0 then GUI.switchTab(GUI._tabs[1], GUI._pages[1]) end end
 
 local fbDragging, fbDragStart, fbStartPos, fbHasMoved = false, nil, nil, false
-
 floatBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        fbDragging = true
-        fbHasMoved = false
-        fbDragStart = input.Position
-        fbStartPos = floatBtn.Position
+        fbDragging = true; fbHasMoved = false; fbDragStart = input.Position; fbStartPos = floatBtn.Position
     end
 end)
 
@@ -742,11 +686,6 @@ UIS.InputEnded:Connect(function(input)
 end)
 
 closeBtn.MouseButton1Click:Connect(GUI.close)
-
-UIS.InputBegan:Connect(function(input, gp)
-    if not gp and input.KeyCode == Enum.KeyCode.LeftAlt then
-        if isOpen then GUI.close() else GUI.open() end
-    end
-end)
+UIS.InputBegan:Connect(function(input, gp) if not gp and input.KeyCode == Enum.KeyCode.LeftAlt then if isOpen then GUI.close() else GUI.open() end end end)
 
 return GUI
