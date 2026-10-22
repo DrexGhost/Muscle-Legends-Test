@@ -25,17 +25,12 @@ GUI.screenGui = screenGui
 
 local BASE_W, BASE_H = 660, 460
 
-local YELLOW = Color3.fromRGB(255, 210, 60)
-local YELLOW_DARK = Color3.fromRGB(240, 190, 40)
-local TEXT_DARK = Color3.fromRGB(30, 30, 30)
-local TEXT_MUTED = Color3.fromRGB(90, 80, 50)
-
 local Main = Instance.new("Frame")
 Main.Name = "Main"
 Main.AnchorPoint = Vector2.new(0.5, 0.5)
 Main.Size = UDim2.new(0, BASE_W, 0, BASE_H)
 Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-Main.BackgroundColor3 = YELLOW
+Main.BackgroundColor3 = T.bg2
 Main.BorderSizePixel = 0
 Main.ClipsDescendants = true
 Main.Visible = false
@@ -43,7 +38,7 @@ Main.Parent = screenGui
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 24)
 
 local mainStroke = Instance.new("UIStroke")
-mainStroke.Color = Color3.fromRGB(200, 150, 0)
+mainStroke.Color = T.stroke
 mainStroke.Thickness = 1.5
 mainStroke.Transparency = 0.2
 mainStroke.Parent = Main
@@ -60,7 +55,7 @@ GUI.uiScale = uiScale
 local TopBar = Instance.new("Frame")
 TopBar.Name = "TopBar"
 TopBar.Size = UDim2.new(1, 0, 0, 58)
-TopBar.BackgroundColor3 = YELLOW_DARK
+TopBar.BackgroundColor3 = T.panel
 TopBar.BorderSizePixel = 0
 TopBar.Parent = Main
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 24)
@@ -87,7 +82,7 @@ titleLabel.Size = UDim2.new(0, 200, 0, 20)
 titleLabel.Position = UDim2.new(0, 68, 0, 12)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Text = "Muscle Legends"
-titleLabel.TextColor3 = TEXT_DARK
+titleLabel.TextColor3 = T.text
 titleLabel.TextSize = 15
 titleLabel.Font = Enum.Font.GothamBlack
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -98,7 +93,7 @@ versionLabel.Size = UDim2.new(0, 200, 0, 14)
 versionLabel.Position = UDim2.new(0, 68, 0, 30)
 versionLabel.BackgroundTransparency = 1
 versionLabel.Text = "NexusX"
-versionLabel.TextColor3 = TEXT_MUTED
+versionLabel.TextColor3 = T.textMuted
 versionLabel.TextSize = 10
 versionLabel.Font = Enum.Font.Gotham
 versionLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -107,10 +102,10 @@ versionLabel.Parent = TopBar
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 32, 0, 32)
 closeBtn.Position = UDim2.new(1, -44, 0.5, -16)
-closeBtn.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
+closeBtn.BackgroundColor3 = T.panelHi
 closeBtn.BorderSizePixel = 0
 closeBtn.Text = "×"
-closeBtn.TextColor3 = TEXT_DARK
+closeBtn.TextColor3 = T.textDim
 closeBtn.TextSize = 20
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.AutoButtonColor = false
@@ -121,13 +116,13 @@ closeBtn.MouseEnter:Connect(function()
     TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = T.danger, TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 end)
 closeBtn.MouseLeave:Connect(function()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255, 180, 0), TextColor3 = TEXT_DARK}):Play()
+    TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = T.panelHi, TextColor3 = T.textDim}):Play()
 end)
 
 local Sidebar = Instance.new("Frame")
 Sidebar.Size = UDim2.new(0, 152, 1, -88)
 Sidebar.Position = UDim2.new(0, 0, 0, 58)
-Sidebar.BackgroundColor3 = YELLOW_DARK
+Sidebar.BackgroundColor3 = T.bg2
 Sidebar.BorderSizePixel = 0
 Sidebar.Parent = Main
 Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 24)
@@ -160,7 +155,7 @@ contentPad.Parent = Content
 local Footer = Instance.new("Frame")
 Footer.Size = UDim2.new(1, 0, 0, 30)
 Footer.Position = UDim2.new(0, 0, 1, -30)
-Footer.BackgroundColor3 = YELLOW_DARK
+Footer.BackgroundColor3 = T.panel
 Footer.BorderSizePixel = 0
 Footer.Parent = Main
 Instance.new("UICorner", Footer).CornerRadius = UDim.new(0, 24)
@@ -228,7 +223,7 @@ end
 function GUI.makeTab(text, order, iconKind)
     local tab = Instance.new("TextButton")
     tab.Size = UDim2.new(1, 0, 0, 36)
-    tab.BackgroundColor3 = YELLOW
+    tab.BackgroundColor3 = T.card
     tab.BackgroundTransparency = 1
     tab.BorderSizePixel = 0
     tab.Text = ""
@@ -240,7 +235,7 @@ function GUI.makeTab(text, order, iconKind)
     local indicator = Instance.new("Frame")
     indicator.Size = UDim2.new(0, 3, 0.55, 0)
     indicator.Position = UDim2.new(0, 0, 0.225, 0)
-    indicator.BackgroundColor3 = TEXT_DARK
+    indicator.BackgroundColor3 = T.accent
     indicator.BorderSizePixel = 0
     indicator.BackgroundTransparency = 1
     indicator.Parent = tab
@@ -251,14 +246,14 @@ function GUI.makeTab(text, order, iconKind)
     iconHolder.Position = UDim2.new(0, 12, 0, 0)
     iconHolder.BackgroundTransparency = 1
     iconHolder.Parent = tab
-    buildIcon(iconHolder, iconKind, TEXT_MUTED)
+    buildIcon(iconHolder, iconKind, T.textDim)
 
     local textLabel = Instance.new("TextLabel")
     textLabel.Size = UDim2.new(1, -40, 1, 0)
     textLabel.Position = UDim2.new(0, 40, 0, 0)
     textLabel.BackgroundTransparency = 1
     textLabel.Text = text
-    textLabel.TextColor3 = TEXT_MUTED
+    textLabel.TextColor3 = T.textDim
     textLabel.TextSize = 12
     textLabel.Font = Enum.Font.GothamMedium
     textLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -269,28 +264,28 @@ function GUI.makeTab(text, order, iconKind)
     obj.SetActive = function(v)
         obj.Active = v
         if v then
-            TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = YELLOW, BackgroundTransparency = 0}):Play()
+            TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = T.card, BackgroundTransparency = 0.05}):Play()
             TweenService:Create(indicator, TweenInfo.new(0.25), {BackgroundTransparency = 0}):Play()
-            TweenService:Create(textLabel, TweenInfo.new(0.2), {TextColor3 = TEXT_DARK}):Play()
-            buildIcon(iconHolder, iconKind, TEXT_DARK)
+            TweenService:Create(textLabel, TweenInfo.new(0.2), {TextColor3 = T.text}):Play()
+            buildIcon(iconHolder, iconKind, T.accent)
         else
             TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
             TweenService:Create(indicator, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(textLabel, TweenInfo.new(0.2), {TextColor3 = TEXT_MUTED}):Play()
-            buildIcon(iconHolder, iconKind, TEXT_MUTED)
+            TweenService:Create(textLabel, TweenInfo.new(0.2), {TextColor3 = T.textDim}):Play()
+            buildIcon(iconHolder, iconKind, T.textDim)
         end
     end
 
     tab.MouseEnter:Connect(function()
         if not obj.Active then
-            TweenService:Create(tab, TweenInfo.new(0.12), {BackgroundTransparency = 0.5, BackgroundColor3 = YELLOW}):Play()
-            TweenService:Create(textLabel, TweenInfo.new(0.12), {TextColor3 = TEXT_DARK}):Play()
+            TweenService:Create(tab, TweenInfo.new(0.12), {BackgroundTransparency = 0.55, BackgroundColor3 = T.card}):Play()
+            TweenService:Create(textLabel, TweenInfo.new(0.12), {TextColor3 = T.text}):Play()
         end
     end)
     tab.MouseLeave:Connect(function()
         if not obj.Active then
             TweenService:Create(tab, TweenInfo.new(0.12), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(textLabel, TweenInfo.new(0.12), {TextColor3 = TEXT_MUTED}):Play()
+            TweenService:Create(textLabel, TweenInfo.new(0.12), {TextColor3 = T.textDim}):Play()
         end
     end)
 
@@ -306,7 +301,7 @@ function GUI.makePage()
     page.CanvasSize = UDim2.new(0, 0, 0, 800)
     page.AutomaticCanvasSize = Enum.AutomaticSize.Y
     page.ScrollBarThickness = 3
-    page.ScrollBarImageColor3 = TEXT_DARK
+    page.ScrollBarImageColor3 = T.accent
     page.ScrollBarImageTransparency = 0.5
     page.Visible = false
     page.Parent = Content
@@ -337,7 +332,7 @@ function GUI.makeSectionHeader(parent, text, order)
     local dot = Instance.new("Frame", holder)
     dot.Size = UDim2.new(0, 6, 0, 6)
     dot.Position = UDim2.new(0, 4, 0.5, -3)
-    dot.BackgroundColor3 = TEXT_DARK
+    dot.BackgroundColor3 = T.accent
     dot.BorderSizePixel = 0
     Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
 
@@ -346,7 +341,7 @@ function GUI.makeSectionHeader(parent, text, order)
     lbl.Position = UDim2.new(0, 18, 0, 0)
     lbl.BackgroundTransparency = 1
     lbl.Text = text
-    lbl.TextColor3 = TEXT_DARK
+    lbl.TextColor3 = T.text
     lbl.TextSize = 11
     lbl.Font = Enum.Font.GothamBold
     lbl.TextXAlignment = Enum.TextXAlignment.Left
