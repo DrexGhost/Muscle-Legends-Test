@@ -35,7 +35,7 @@ Main.BorderSizePixel = 0
 Main.ClipsDescendants = true
 Main.Visible = false
 Main.Parent = screenGui
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 18)
 
 GUI.Main = Main
 GUI.BASE_W = BASE_W
