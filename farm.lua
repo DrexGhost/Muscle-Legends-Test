@@ -1,100 +1,30 @@
 local Core, GUI = ...
 local RunService = game:GetService("RunService")
-local LocalPlayer = game:GetService("Players").LocalPlayer
 
 local function build()
     local tab = GUI.makeTab("Farm", 3, "farm")
     local page = GUI.makePage()
 
-    local char, hrp, hum
-    local savedCollide = {}
-    local noclipActive = false
-    local RETURN_POS = Vector3.new(-16.9, 36.3, -1243.5)
-
-    local function bindChar(c)
-        char = c
-        hrp = c:WaitForChild("HumanoidRootPart")
-        hum = c:WaitForChild("Humanoid")
-        savedCollide = {}
-        noclipActive = false
-    end
-    if LocalPlayer.Character then bindChar(LocalPlayer.Character) end
-    LocalPlayer.CharacterAdded:Connect(bindChar)
-
-    local function setNoclip(enabled)
-        local c = LocalPlayer.Character
-        if not c then return end
-        if enabled then
-            for _, p in ipairs(c:GetDescendants()) do
-                if p:IsA("BasePart") then
-                    if savedCollide[p] == nil then savedCollide[p] = p.CanCollide end
-                    p.CanCollide = false
-                end
-            end
-        else
-            for part, state in pairs(savedCollide) do
-                if part and part.Parent then part.CanCollide = state end
-            end
-            savedCollide = {}
-        end
-    end
-
-    local function findGroundPos(fromPos)
-        local c = LocalPlayer.Character
-        if not c then return nil end
-        local params = RaycastParams.new()
-        params.FilterType = Enum.RaycastFilterType.Exclude
-        params.FilterDescendantsInstances = { c }
-        local result = workspace:Raycast(fromPos + Vector3.new(0, 5, 0), Vector3.new(0, -2000, 0), params)
-        if result then return result.Position + Vector3.new(0, 3.5, 0) end
-        return nil
-    end
-
-    local function stopFarm()
-        local c = LocalPlayer.Character
-        if not c then return end
-        local root = c:FindFirstChild("HumanoidRootPart")
-        local h = c:FindFirstChildOfClass("Humanoid")
-        if not root or not h then return end
-
-        root.AssemblyLinearVelocity = Vector3.zero
-        root.AssemblyAngularVelocity = Vector3.zero
-
-        local target = findGroundPos(root.Position) or findGroundPos(RETURN_POS) or RETURN_POS
-        root.CFrame = CFrame.new(target)
-
-        if noclipActive then
-            setNoclip(false)
-            noclipActive = false
-        end
-
-        h.PlatformStand = false
-        h.AutoRotate = true
-    end
-
-    local function returnToBase()
-        local c = LocalPlayer.Character
-        if not c then return end
-        local root = c:FindFirstChild("HumanoidRootPart")
-        if not root then return end
-
-        root.AssemblyLinearVelocity = Vector3.zero
-        root.AssemblyAngularVelocity = Vector3.zero
-
-        local target = findGroundPos(RETURN_POS) or RETURN_POS
-        root.CFrame = CFrame.new(target)
-    end
-
     GUI.makeSectionHeader(page, "Boss Farm", 1)
     GUI.makeToggle(page, "Boss Farm", "Фарм боссов", Core.settings.bossFarm, 2, function(v)
         Core.settings.bossFarm = v
-        if not v and not Core.settings.collectChest then stopFarm() end
+        if not v and not Core.settings.collectChest then Core.stopFarm() end
     end, "bossFarm")
 
-    GUI.makeSectionHeader(page, "Chest", 3)
-    GUI.makeToggle(page, "Collect Chest", "Сбор сундуков", Core.settings.collectChest, 4, function(v)
+    local bossNames = {"Common", "Rare", "Epic", "Legendary", "Mystical", "Rainbow"}
+
+    for i = 1, 6 do
+        local key = "bossHeight" .. i
+        local label = (bossNames[i] or ("Boss" .. i)) .. " Height"
+        GUI.makeSlider(page, label, 0, 300, Core.settings[key] or 143, 2 + i, function(v)
+            Core.settings[key] = v
+        end, key)
+    end
+
+    GUI.makeSectionHeader(page, "Chest", 10)
+    GUI.makeToggle(page, "Collect Chest", "Сбор сундуков", Core.settings.collectChest, 11, function(v)
         Core.settings.collectChest = v
-        if not v and not Core.settings.bossFarm then stopFarm() end
+        if not v and not Core.settings.bossFarm then Core.stopFarm() end
     end, "collectChest")
 
     local lastAttack, lastSearchTime, lastChestTime = 0, 0, 0
@@ -117,21 +47,29 @@ local function build()
         return nil
     end
 
+    local function getBossHeight(name)
+        local idx = tostring(name):match("^Boss(%d+)$")
+        if idx then
+            return Core.settings["bossHeight" .. idx] or 143
+        end
+        return Core.BOSS_HEIGHTS[name] or 143
+    end
+
     RunService.Heartbeat:Connect(function()
         if not Core.settings.collectChest and not Core.settings.bossFarm then return end
-        if not hrp or not hrp.Parent or not hum then return end
+        if not Core.HRP or not Core.HRP.Parent or not Core.Hum then return end
 
         local now = os.clock()
 
         if Core.settings.collectChest and not currentBossPart then
             if now - lastChestTime > 2 then
                 lastChestTime = now
-                if not noclipActive then setNoclip(true); noclipActive = true end
-                hum.PlatformStand = true
-                hrp.AssemblyLinearVelocity = Vector3.zero
-                hrp.AssemblyAngularVelocity = Vector3.zero
+                if not Core.NoclipActive then Core.setNoclip(true); Core.NoclipActive = true end
+                Core.Hum.PlatformStand = true
+                Core.HRP.AssemblyLinearVelocity = Vector3.zero
+                Core.HRP.AssemblyAngularVelocity = Vector3.zero
                 local chest = Core.CHESTS[chestIndex]
-                if chest then hrp.CFrame = CFrame.new(chest.coords + Vector3.new(0, 3, 0)) end
+                if chest then Core.HRP.CFrame = CFrame.new(chest + Vector3.new(0, 3, 0)) end
                 chestIndex = chestIndex + 1
                 if chestIndex > #Core.CHESTS then chestIndex = 1 end
             end
@@ -140,7 +78,7 @@ local function build()
         if Core.settings.bossFarm then
             if currentBossPart then
                 if not currentBossPart.Parent or currentBossPart.Position.Y <= 0 then
-                    if bossWasAlive then returnToBase() end
+                    if bossWasAlive then Core.returnToBase() end
                     currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
                 else
                     local hp = currentBossModel:GetAttribute("Health") or currentBossPart:GetAttribute("Health")
@@ -148,7 +86,7 @@ local function build()
                         bossWasAlive = true
                     elseif hp and hp <= 0 then
                         if bossWasAlive then
-                            returnToBase()
+                            Core.returnToBase()
                             currentBossModel, currentBossPart, bossWasAlive = nil, nil, false
                         end
                     end
@@ -166,24 +104,24 @@ local function build()
                 if not currentBossPart then return end
             end
 
-            if not noclipActive then
-                setNoclip(true)
-                noclipActive = true
+            if not Core.NoclipActive then
+                Core.setNoclip(true)
+                Core.NoclipActive = true
             end
 
-            hum.AutoRotate = false
-            hum.PlatformStand = true
-            hrp.AssemblyLinearVelocity = Vector3.zero
-            hrp.AssemblyAngularVelocity = Vector3.zero
+            Core.Hum.AutoRotate = false
+            Core.Hum.PlatformStand = true
+            Core.HRP.AssemblyLinearVelocity = Vector3.zero
+            Core.HRP.AssemblyAngularVelocity = Vector3.zero
 
-            local height = Core.BOSS_HEIGHTS[currentBossModel.Name] or 143
+            local height = getBossHeight(currentBossModel.Name)
             local targetPos = Vector3.new(currentBossPart.Position.X, height, currentBossPart.Position.Z)
             local lookTarget = currentBossPart.Position
 
             if (targetPos - lookTarget).Magnitude < 1 then
                 lookTarget = targetPos + Vector3.new(0, 0, -1)
             end
-            hrp.CFrame = CFrame.lookAt(targetPos, lookTarget)
+            Core.HRP.CFrame = CFrame.lookAt(targetPos, lookTarget)
 
             if now - lastAttack >= 0.4 then
                 lastAttack = now
