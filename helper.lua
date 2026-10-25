@@ -17,22 +17,39 @@ local function build()
         if t then pcall(task.cancel, t) end
     end
 
+    local function ensureToolEquipped(targetName)
+        if not Core.Char or not Core.Char.Parent then return nil end
+        local tool = Core.Char:FindFirstChild(targetName)
+        if tool and tool:IsA("Tool") then return tool end
+        local bp = LocalPlayer:FindFirstChild("Backpack")
+        if not bp then return nil end
+        local bpTool = bp:FindFirstChild(targetName)
+        if not bpTool or not bpTool:IsA("Tool") then return nil end
+        for _, c in ipairs(Core.Char:GetChildren()) do
+            if c:IsA("Tool") and c ~= bpTool then
+                c.Parent = bp
+            end
+        end
+        bpTool.Parent = Core.Char
+        return Core.Char:FindFirstChild(targetName)
+    end
+
     local function startAutoStr()
         safeCancel(autoStrThread)
         autoStrThread = task.spawn(function()
             while Core.settings.autoStrength do
-                if Core.Char and Core.Char:FindFirstChildOfClass("Humanoid") then
+                if Core.Char and Core.Char.Parent and Core.Hum and Core.Hum.Parent then
                     local targetName = Core.settings.strengthTool or "Weight"
-                    Core.unequipOtherTools(targetName)
-                    if not Core.hasTool(targetName) then
-                        Core.equipTool(targetName)
-                    end
-                    local tool = Core.Char:FindFirstChild(targetName)
-                    if tool and tool:IsA("Tool") then
-                        pcall(function() tool:Activate() end)
+                    local tool = ensureToolEquipped(targetName)
+                    if Core.settings.strengthUseMode == "rep" then
+                        Core.doRep()
+                    else
+                        if tool and tool:IsA("Tool") then
+                            pcall(function() tool:Activate() end)
+                        end
                     end
                 end
-                task.wait(0.01)
+                RunService.Heartbeat:Wait()
             end
         end)
     end
@@ -201,7 +218,11 @@ local function build()
                 }):Play()
                 for _, child in ipairs(m:GetDescendants()) do
                     if child:IsA("GuiObject") and child ~= m then
-                        TweenService:Create(child, TweenInfo.new(0.15), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
+                        local props = {BackgroundTransparency = 1}
+                        if child:IsA("TextLabel") or child:IsA("TextButton") or child:IsA("TextBox") then
+                            props.TextTransparency = 1
+                        end
+                        TweenService:Create(child, TweenInfo.new(0.15), props):Play()
                     end
                     if child:IsA("UIStroke") then
                         TweenService:Create(child, TweenInfo.new(0.15), {Transparency = 1}):Play()
@@ -218,7 +239,7 @@ local function build()
             local cPos = GUI.Content.AbsolutePosition
             local cSize = GUI.Content.AbsoluteSize
             local menuW = 200
-            local menuH = 40 + #Core.STRENGTH_TOOLS * 38 + 8
+            local menuH = 200
             local targetX = cPos.X + (cSize.X / 2) - (menuW / 2)
             local targetY = cPos.Y + (cSize.Y / 2) - (menuH / 2)
 
@@ -245,7 +266,7 @@ local function build()
             header.Size = UDim2.new(1, -40, 0, 26)
             header.Position = UDim2.new(0, 12, 0, 8)
             header.BackgroundTransparency = 1
-            header.Text = "Swing"
+            header.Text = "Settings"
             header.TextColor3 = T.text
             header.TextSize = 12
             header.Font = Enum.Font.GothamBold
@@ -266,26 +287,49 @@ local function build()
             Instance.new("UICorner", closeX).CornerRadius = UDim.new(0, 5)
             closeX.MouseButton1Click:Connect(function() closeToolMenu(false) end)
 
-            local list = Instance.new("Frame", toolMenu)
-            list.Size = UDim2.new(1, -16, 1, -46)
+            local list = Instance.new("ScrollingFrame", toolMenu)
+            list.Size = UDim2.new(1, -16, 1, -48)
             list.Position = UDim2.new(0, 8, 0, 40)
             list.BackgroundTransparency = 1
+            list.BorderSizePixel = 0
+            list.CanvasSize = UDim2.new(0, 0, 0, 0)
+            list.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            list.ScrollBarThickness = 3
+            list.ScrollBarImageColor3 = T.accent
+            list.ScrollBarImageTransparency = 0.4
+            list.ScrollingDirection = Enum.ScrollingDirection.Y
             list.ZIndex = 101
 
             local ll = Instance.new("UIListLayout", list)
             ll.Padding = UDim.new(0, 4)
             ll.SortOrder = Enum.SortOrder.LayoutOrder
 
-            local mOrder = 1
-            for _, toolName in ipairs(Core.STRENGTH_TOOLS) do
-                local isActive = Core.settings.strengthTool == toolName
+            local listPad = Instance.new("UIPadding", list)
+            listPad.PaddingBottom = UDim.new(0, 4)
+            listPad.PaddingRight = UDim.new(0, 2)
+
+            local function addMenuLabel(text, order)
+                local lbl = Instance.new("TextLabel", list)
+                lbl.Size = UDim2.new(1, 0, 0, 20)
+                lbl.BackgroundTransparency = 1
+                lbl.Text = text
+                lbl.TextColor3 = T.textDim
+                lbl.TextSize = 10
+                lbl.Font = Enum.Font.GothamBold
+                lbl.TextXAlignment = Enum.TextXAlignment.Left
+                lbl.LayoutOrder = order
+                lbl.ZIndex = 102
+                return lbl
+            end
+
+            local function addMenuToggle(text, isActive, order, onClick)
                 local btn = Instance.new("TextButton", list)
                 btn.Size = UDim2.new(1, 0, 0, 34)
                 btn.BackgroundColor3 = T.card
                 btn.BorderSizePixel = 0
                 btn.Text = ""
                 btn.AutoButtonColor = false
-                btn.LayoutOrder = mOrder
+                btn.LayoutOrder = order
                 btn.ZIndex = 102
                 Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
 
@@ -293,7 +337,7 @@ local function build()
                 lbl.Size = UDim2.new(1, -45, 1, 0)
                 lbl.Position = UDim2.new(0, 12, 0, 0)
                 lbl.BackgroundTransparency = 1
-                lbl.Text = toolName
+                lbl.Text = text
                 lbl.TextColor3 = T.text
                 lbl.TextSize = 12
                 lbl.Font = Enum.Font.GothamBold
@@ -318,24 +362,60 @@ local function build()
                 knob.ZIndex = 104
                 Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 
-                btn.MouseButton1Click:Connect(function()
+                btn.MouseButton1Click:Connect(onClick)
+                return { Button = btn, Pill = pill, Knob = knob }
+            end
+
+            local modeRefs = {}
+            local toolRefs = {}
+
+            local function updateModeUI()
+                local mode = Core.settings.strengthUseMode or "default"
+                for name, ref in pairs(modeRefs) do
+                    local isCurrent = (name == "Default" and mode == "default") or (name == "Use Rep " and mode == "rep")
+                    TweenService:Create(ref.Pill, TweenInfo.new(0.15), {BackgroundColor3 = isCurrent and T.accent or T.toggleOff}):Play()
+                    TweenService:Create(ref.Knob, TweenInfo.new(0.15), {Position = isCurrent and UDim2.new(1, -12, 0.5, -5) or UDim2.new(0, 2, 0.5, -5)}):Play()
+                end
+            end
+
+            local function updateToolUI()
+                for name, ref in pairs(toolRefs) do
+                    local isCurrent = (name == Core.settings.strengthTool)
+                    TweenService:Create(ref.Pill, TweenInfo.new(0.15), {BackgroundColor3 = isCurrent and T.accent or T.toggleOff}):Play()
+                    TweenService:Create(ref.Knob, TweenInfo.new(0.15), {Position = isCurrent and UDim2.new(1, -12, 0.5, -5) or UDim2.new(0, 2, 0.5, -5)}):Play()
+                end
+            end
+
+            local mOrder = 1
+
+            addMenuLabel("Use", mOrder)
+            mOrder = mOrder + 1
+
+            modeRefs["Default"] = addMenuToggle("Default", (Core.settings.strengthUseMode or "default") ~= "rep", mOrder, function()
+                Core.settings.strengthUseMode = "default"
+                Core.saveSetting("strengthUseMode", "default")
+                updateModeUI()
+            end)
+            mOrder = mOrder + 1
+
+            modeRefs["Use Rep "] = addMenuToggle("Use Rep ", Core.settings.strengthUseMode == "rep", mOrder, function()
+                Core.settings.strengthUseMode = "rep"
+                Core.saveSetting("strengthUseMode", "rep")
+                updateModeUI()
+            end)
+            mOrder = mOrder + 1
+
+            addMenuLabel("Swing", mOrder)
+            mOrder = mOrder + 1
+
+            for _, toolName in ipairs(Core.STRENGTH_TOOLS) do
+                toolRefs[toolName] = addMenuToggle(toolName, Core.settings.strengthTool == toolName, mOrder, function()
                     Core.settings.strengthTool = toolName
                     Core.saveSetting("strengthTool", toolName)
                     if autoStrToggle and autoStrToggle.Desc then
                         autoStrToggle.Desc.Text = "Качает: " .. toolName
                     end
-                    for _, otherBtn in ipairs(list:GetChildren()) do
-                        if otherBtn:IsA("TextButton") then
-                            local p = otherBtn:FindFirstChild("Pill")
-                            local k = p and p:FindFirstChild("Knob")
-                            if p and k then
-                                local otherLbl = otherBtn:FindFirstChildOfClass("TextLabel")
-                                local isCurrent = otherLbl and otherLbl.Text == toolName
-                                TweenService:Create(p, TweenInfo.new(0.15), {BackgroundColor3 = isCurrent and T.accent or T.toggleOff}):Play()
-                                TweenService:Create(k, TweenInfo.new(0.15), {Position = isCurrent and UDim2.new(1, -12, 0.5, -5) or UDim2.new(0, 2, 0.5, -5)}):Play()
-                            end
-                        end
-                    end
+                    updateToolUI()
                 end)
                 mOrder = mOrder + 1
             end
@@ -437,6 +517,7 @@ local function build()
         local limitBoxRef = nil
         local pillLimitRef = nil
         local knobLimitRef = nil
+        local oldRefresh = nil
 
         local function closeRebMenu(instant)
             if rebMenu then
@@ -446,6 +527,10 @@ local function build()
                 limitBoxRef = nil
                 pillLimitRef = nil
                 knobLimitRef = nil
+                if oldRefresh then
+                    Core.toggleRefs["limitedRebirth"] = oldRefresh
+                    oldRefresh = nil
+                end
                 if instant then
                     m:Destroy()
                     return
@@ -459,7 +544,11 @@ local function build()
                 }):Play()
                 for _, child in ipairs(m:GetDescendants()) do
                     if child:IsA("GuiObject") and child ~= m then
-                        TweenService:Create(child, TweenInfo.new(0.15), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
+                        local props = {BackgroundTransparency = 1}
+                        if child:IsA("TextLabel") or child:IsA("TextButton") or child:IsA("TextBox") then
+                            props.TextTransparency = 1
+                        end
+                        TweenService:Create(child, TweenInfo.new(0.15), props):Play()
                     end
                     if child:IsA("UIStroke") then
                         TweenService:Create(child, TweenInfo.new(0.15), {Transparency = 1}):Play()
@@ -645,7 +734,7 @@ local function build()
                 end
             end)
 
-            local oldRefresh = Core.toggleRefs["limitedRebirth"]
+            oldRefresh = Core.toggleRefs["limitedRebirth"]
             Core.toggleRefs["limitedRebirth"] = {
                 setEnabled = function(v, silent)
                     if pillLimitRef and knobLimitRef then
@@ -656,11 +745,6 @@ local function build()
                     end
                 end
             }
-
-            closeX.MouseButton1Click:Connect(function()
-                closeRebMenu(false)
-                if oldRefresh then Core.toggleRefs["limitedRebirth"] = oldRefresh end
-            end)
 
             TweenService:Create(rebMenu, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                 Size = UDim2.new(0, menuW, 0, menuH),
