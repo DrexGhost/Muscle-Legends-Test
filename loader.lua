@@ -7,7 +7,7 @@ local base = "https://raw.githubusercontent.com/DrexGhost/Muscle-Legends-Test/ma
 
 local fileList = {
     "core.lua", "gui.lua", "main.lua", "helper.lua", "farm.lua",
-    "ultimate.lua", "movement.lua", "event.lua", "settings.lua"
+    "ultimate.lua", "movement.lua", "event.lua", "event2.lua", "settings.lua"
 }
 local total = #fileList
 
@@ -154,7 +154,7 @@ if not GUI then
     return
 end
 
-local tabs = {"main.lua", "helper.lua", "farm.lua", "ultimate.lua", "movement.lua", "event.lua", "settings.lua"}
+local tabs = {"main.lua", "helper.lua", "farm.lua", "ultimate.lua", "movement.lua", "event.lua", "event2.lua", "settings.lua"}
 for _, name in ipairs(tabs) do
     local fn = compile(name, sources[name])
     if fn then
